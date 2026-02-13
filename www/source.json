@@ -1,0 +1,70 @@
+{
+  "data": {
+    "settings": {
+      "currency": "INR"
+    },
+    "assets": {
+      "default_avatar": "/images/avatar.png"
+    },
+    "user": {
+      "id": "usr_123",
+      "name": "  John Doe  ",
+      "email": "  JOHN@EXAMPLE.COM  ",
+      "avatar": null,
+      "country": "IN",
+      "active": true,
+      "role": "admin",
+      "created_at": "2024-06-15 10:30:00",
+      "age": "30",
+      "score": "4.8",
+      "verified": "yes",
+      "max_login": null
+    },
+    "locations": {
+      "edges": [
+        {
+          "node": {
+            "id": "loc_1",
+            "legacyResourceId": 101,
+            "name": " Mumbai Office ",
+            "price": 1500.5,
+            "status": "ACTIVE",
+            "address": {
+              "city": "Mumbai",
+              "country": "in"
+            },
+            "tags": ["premium", null, "coworking"]
+          }
+        },
+        {
+          "node": {
+            "id": "loc_2",
+            "legacyResourceId": 102,
+            "name": " Delhi Hub ",
+            "price": 2000.0,
+            "status": "INACTIVE",
+            "address": {
+              "city": "Delhi",
+              "country": "in"
+            },
+            "tags": ["basic"]
+          }
+        },
+        {
+          "node": {
+            "id": "loc_3",
+            "legacyResourceId": 103,
+            "name": " Bangalore Tech Park ",
+            "price": 1800.75,
+            "status": "ACTIVE",
+            "address": {
+              "city": "Bangalore",
+              "country": "in"
+            },
+            "tags": ["tech", "premium"]
+          }
+        }
+      ]
+    }
+  }
+}

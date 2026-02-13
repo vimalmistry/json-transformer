@@ -1,0 +1,114 @@
+{
+  // ============================================================
+  // Final Output Template
+  // ============================================================
+
+  "version": "1.0",
+
+  // Global variables
+  "@vars": {
+    "currency": "data.settings.currency |> default('USD')",
+    "default_avatar": "data.assets.default_avatar |> default('/images/default.png')",
+    "country_code": "data.user.country |> upper",
+    "is_indian": "data.user.country == 'IN'",
+    "active_locations": "data.locations.edges |> filter(.node.status == 'ACTIVE')",
+  },
+
+  // Reusable macros
+  "@macros": {
+    "normalize_name": ". |> trim |> lower",
+    "safe_email": ". |> trim |> lower |> default('unknown@email.com')",
+    "money_format": ". |> money(@vars.currency)",
+  },
+
+  // ============================================================
+  // User
+  // ============================================================
+  "user": {
+    "id": "data.user.id",
+    "name": "data.user.name |> @normalize_name",
+    "email": "data.user.email |> @safe_email",
+
+    "profile": {
+      "avatar": "data.user.avatar |> default(@vars.default_avatar)",
+      "country": "@vars.country_code",
+      "is_indian": "@vars.is_indian",
+      "created_at": "data.user.created_at |> date('Y-m-d')",
+
+      // Casting functions
+      "age": "data.user.age |> to_integer",
+      "score": "data.user.score |> to_float",
+      "verified": "data.user.verified |> to_boolean",
+      "max_login": "data.user.max_login |> default('10') |> to_int",
+
+      // to_string example
+      "age_label": "data.user.age |> to_string",
+    },
+
+    // Inline ternary (single line)
+    "status": "data.user.active == true ? 'enabled' : 'disabled'",
+
+    // Ternary with pipe
+    "status_label": "data.user.active == true ? 'Active' : 'Inactive' |> upper",
+
+    // Switch on role
+    "role_code": {
+      "@switch": "data.user.role",
+      "@cases": {
+        "admin": "'A'",
+        "manager": "'M'",
+        "guest": "'G'",
+      },
+      "@default": "'U'",
+    },
+  },
+
+  // ============================================================
+  // Locations (filtered + sorted)
+  // ============================================================
+  "locations[]": {
+    "@each": "data.locations.edges |> filter(.node.status == 'ACTIVE') |> sort(.node.name)",
+    "@do": {
+      "uid": "node.id",
+      "legacy_id": "node.legacyResourceId",
+      "title": "node.name |> trim",
+      "price": "node.price |> @money_format",
+
+      "address": {
+        "city": "node.address.city",
+        "country": "node.address.country |> upper",
+      },
+
+      "is_active": {
+        "@if": "node.status == 'ACTIVE'",
+        "@then": "true",
+        "@else": "false",
+      },
+
+      // Nested iteration
+      "tags[]": {
+        "@each": "node.tags |> filter(. != null)",
+        "@do": {
+          "label": "node |> lower",
+        },
+      },
+    },
+  },
+
+  // ============================================================
+  // Stats
+  // ============================================================
+  "stats": {
+    "total_locations": "data.locations.edges |> count",
+    "active_locations": "@vars.active_locations |> count",
+    "first_location_id": "data.locations.edges[0].node.id |> default(null)",
+  },
+
+  // ============================================================
+  // Meta
+  // ============================================================
+  "meta": {
+    "generated_at": "now()",
+    "currency": "@vars.currency",
+  },
+}

@@ -1,0 +1,203 @@
+{
+  // ============================================================
+  // JSON Mapper DSL - Full Example
+  // Output-driven declarative mapping
+  //
+  // Rules:
+  // - JSON structure = final output
+  // - Expressions use pipe syntax
+  // - Directives start with "@"
+  // ============================================================
+
+  "version": "1.0",
+
+  // ============================================================
+  // @vars
+  //
+  // Global variables evaluated BEFORE mapping execution.
+  // Can reference source JSON or use expressions.
+  //
+  // These are READ-ONLY during execution.
+  // ============================================================
+
+  "@vars": {
+
+    // Dynamic variable from source JSON
+    "currency": "data.settings.currency |> default('USD')",
+
+    // Fallback value if missing
+    "default_avatar": "data.assets.default_avatar |> default('/images/default.png')",
+
+    // Computed transformation
+    "country_code": "data.user.country |> upper",
+
+    // Boolean expression allowed
+    "is_indian": "data.user.country == 'IN'",
+
+    // Precomputed filtered array (reusable)
+    "active_locations": "data.locations.edges |> filter(.node.status == 'ACTIVE')"
+  },
+
+  // ============================================================
+  // @macros
+  //
+  // Reusable transformation expressions.
+  // Used via pipe syntax.
+  // ============================================================
+
+  "@macros": {
+
+    // "." refers to incoming value in pipe
+    "normalize_name": ". |> trim |> lower",
+
+    "safe_email": ". |> trim |> lower |> default('unknown@email.com')",
+
+    // Macro referencing @vars
+    "money_format": ". |> money(@vars.currency)"
+  },
+
+  // ============================================================
+  // USER OBJECT OUTPUT
+  // ============================================================
+
+  "user": {
+
+    // Direct path mapping
+    "id": "data.user.id",
+
+    // Macro usage via pipe
+    "name": "data.user.name |> @normalize_name",
+
+    "email": "data.user.email |> @safe_email",
+
+    // Nested object mapping
+    "profile": {
+
+      // default() ensures fallback if null/missing
+      "avatar": "data.user.avatar |> default(@vars.default_avatar)",
+
+      // Using variable
+      "country": "@vars.country_code",
+
+      "is_indian": "@vars.is_indian",
+
+      // Example date transform function
+      "created_at": "data.user.created_at |> date('Y-m-d')"
+    },
+
+    // ============================================================
+    // Conditional logic
+    // ============================================================
+
+    "status": {
+      "@if": "data.user.active == true",
+      "@then": "'enabled'",
+      "@else": "'disabled'"
+    },
+
+    // ============================================================
+    // Switch/case logic
+    // ============================================================
+
+    "role_code": {
+      "@switch": "data.user.role",
+      "@cases": {
+        "admin": "'A'",
+        "manager": "'M'",
+        "guest": "'G'"
+      },
+      "@default": "'U'"
+    }
+  },
+
+  // ============================================================
+  // ARRAY ITERATION
+  //
+  // Syntax:
+  // "fieldName[]": { ... }
+  //
+  // @each must evaluate to array.
+  // Supports full pipe expressions.
+  //
+  // Context inside @do:
+  //   node = current item
+  //   .    = current value context
+  // ============================================================
+
+  "locations[]": {
+
+    "@each": "data.locations.edges
+              |> filter(.node.status == 'ACTIVE')
+              |> sort(.node.name)",
+
+    "@do": {
+
+      // Example object literal
+      "sync_id": {
+        "key": "'id'",
+        "value": "node.id |> trim"
+      },
+
+      "uid": "node.id",
+
+      "legacy_id": "node.legacyResourceId",
+
+      "title": "node.name |> trim",
+
+      // Macro referencing global var
+      "price": "node.price |> @money_format",
+
+      "address": {
+        "city": "node.address.city",
+        "country": "node.address.country |> upper"
+      },
+
+      "is_active": {
+        "@if": "node.status == 'ACTIVE'",
+        "@then": "true",
+        "@else": "false"
+      },
+
+      // ============================================================
+      // Nested iteration example
+      // ============================================================
+
+      "tags[]": {
+
+        "@each": "node.tags |> filter(. != null)",
+
+        "@do": {
+          "label": "node |> lower"
+        }
+      }
+    }
+  },
+
+  // ============================================================
+  // Aggregation examples
+  // ============================================================
+
+  "stats": {
+
+    // Pipe-based aggregation
+    "total_locations": "data.locations.edges |> count",
+
+    // Using precomputed variable
+    "active_locations": "@vars.active_locations |> count",
+
+    // Safe index access
+    "first_location_id": "data.locations.edges[0].node.id |> default(null)"
+  },
+
+  // ============================================================
+  // Meta / system fields
+  // ============================================================
+
+  "meta": {
+
+    // Built-in function example
+    "generated_at": "now()",
+
+    "currency": "@vars.currency"
+  }
+}
