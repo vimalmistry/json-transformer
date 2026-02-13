@@ -14,6 +14,9 @@ final class Transformer
     private ExpressionEvaluator $evaluator;
     private ?string $templatePath = null;
 
+    /** @var array<string, array> Cached parsed template schemas */
+    private array $templateCache = [];
+
     public function __construct()
     {
         $this->evaluator = new ExpressionEvaluator();
@@ -73,16 +76,16 @@ final class Transformer
             ? substr($schema, 0, -4)
             : $schema;
 
-        $file = $this->findTemplate($name);
-        $content = file_get_contents($file);
+        if (!isset($this->templateCache[$name])) {
+            $file = $this->findTemplate($name);
+            $content = file_get_contents($file);
 
-        if (str_ends_with($file, ".jsonc")) {
-            $parsed = $this->parseJsonc($content);
-        } else {
-            $parsed = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $this->templateCache[$name] = str_ends_with($file, ".jsonc")
+                ? $this->parseJsonc($content)
+                : json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         }
 
-        return $this->transform($source, $parsed);
+        return $this->transform($source, $this->templateCache[$name]);
     }
 
     /**
@@ -147,17 +150,12 @@ final class Transformer
         array $macros,
     ): array {
         $resolved = [];
-
-        // Create a temporary context with no vars yet (vars are being built)
-        $tempCtx = new Context($source, [], $macros);
+        $ctx = new Context($source, [], $macros);
 
         foreach ($varsDefinitions as $name => $expression) {
-            $resolved[$name] = $this->evaluator->evaluateExpression(
-                $expression,
-                $tempCtx,
-            );
-            // Update context so later vars can reference earlier ones
-            $tempCtx = new Context($source, $resolved, $macros);
+            $value = $this->evaluator->evaluateExpression($expression, $ctx);
+            $resolved[$name] = $value;
+            $ctx->setVar($name, $value);
         }
 
         return $resolved;

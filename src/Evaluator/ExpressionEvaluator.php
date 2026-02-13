@@ -23,6 +23,9 @@ final class ExpressionEvaluator
     private FunctionRegistry $functions;
     private ExpressionParser $parser;
 
+    /** @var array<string, Node> Cached parsed AST nodes keyed by expression string */
+    private array $astCache = [];
+
     public function __construct()
     {
         $this->functions = new FunctionRegistry();
@@ -93,7 +96,9 @@ final class ExpressionEvaluator
         Context $ctx,
         mixed $pipeValue = null,
     ): mixed {
-        $node = $this->parser->parse($expression);
+        $node = $this->astCache[$expression] ??= $this->parser->parse(
+            $expression,
+        );
         return $this->evaluate($node, $ctx, $pipeValue);
     }
 

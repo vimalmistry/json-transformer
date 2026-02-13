@@ -11,7 +11,11 @@ final class Context
     /** @var array<array{name: string, value: mixed}> */
     private array $scopeStack = [];
 
+    private static ?PathResolver $sharedPathResolver = null;
     private PathResolver $pathResolver;
+
+    /** @var array<string, mixed> */
+    private array $resolvedVars;
 
     /**
      * @param array<string, mixed> $source  The source data
@@ -20,10 +24,17 @@ final class Context
      */
     public function __construct(
         public readonly array $source,
-        public readonly array $vars,
+        array $vars,
         public readonly array $macros,
     ) {
-        $this->pathResolver = new PathResolver();
+        $this->resolvedVars = $vars;
+        self::$sharedPathResolver ??= new PathResolver();
+        $this->pathResolver = self::$sharedPathResolver;
+    }
+
+    public function setVar(string $name, mixed $value): void
+    {
+        $this->resolvedVars[$name] = $value;
     }
 
     public function pushScope(string $name, mixed $value): void
@@ -73,7 +84,7 @@ final class Context
 
     public function getVar(string $name): mixed
     {
-        return $this->vars[$name] ?? null;
+        return $this->resolvedVars[$name] ?? null;
     }
 
     public function getMacro(string $name): ?string

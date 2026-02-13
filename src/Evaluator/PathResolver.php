@@ -6,6 +6,9 @@ namespace O360Main\JsonTransformer\Evaluator;
 
 final class PathResolver
 {
+    /** @var array<string, array> Cached parsed path segments */
+    private array $segmentCache = [];
+
     /**
      * Resolves a dot-notation path against data.
      * Supports array index access like edges[0].node.id
@@ -55,6 +58,10 @@ final class PathResolver
      */
     private function parsePath(string $path): array
     {
+        if (isset($this->segmentCache[$path])) {
+            return $this->segmentCache[$path];
+        }
+
         $segments = [];
         $parts = explode(".", $path);
 
@@ -74,6 +81,6 @@ final class PathResolver
             }
         }
 
-        return $segments;
+        return $this->segmentCache[$path] = $segments;
     }
 }
