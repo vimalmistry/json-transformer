@@ -6,6 +6,7 @@ namespace O360Main\JsonTransformer\Evaluator;
 
 use O360Main\JsonTransformer\Context;
 use O360Main\JsonTransformer\Parser\Ast\ComparisonNode;
+use O360Main\JsonTransformer\Parser\Ast\ConcatNode;
 use O360Main\JsonTransformer\Parser\Ast\DotContextNode;
 use O360Main\JsonTransformer\Parser\Ast\FunctionCallNode;
 use O360Main\JsonTransformer\Parser\Ast\LiteralNode;
@@ -64,6 +65,11 @@ final class ExpressionEvaluator
                 $pipeValue,
             ),
             $node instanceof MacroCallNode => $this->evaluateMacro(
+                $node,
+                $ctx,
+                $pipeValue,
+            ),
+            $node instanceof ConcatNode => $this->evaluateConcat(
                 $node,
                 $ctx,
                 $pipeValue,
@@ -223,6 +229,19 @@ final class ExpressionEvaluator
 
         // A macro expression uses "." for current value, pipe through transforms
         return $this->evaluateExpression($macroExpr, $ctx, $pipeValue);
+    }
+
+    private function evaluateConcat(
+        ConcatNode $node,
+        Context $ctx,
+        mixed $pipeValue,
+    ): string {
+        $result = '';
+        foreach ($node->parts as $part) {
+            $value = $this->evaluate($part, $ctx, $pipeValue);
+            $result .= $value === null ? '' : (string) $value;
+        }
+        return $result;
     }
 
     private function evaluateComparison(

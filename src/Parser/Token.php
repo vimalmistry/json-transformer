@@ -20,6 +20,7 @@ final class Token
     public const TYPE_QUESTION = "QUESTION";
     public const TYPE_COLON = "COLON";
     public const TYPE_AT_REF = "AT_REF";
+    public const TYPE_CONCAT = "CONCAT";
     public const TYPE_EOF = "EOF";
 
     public function __construct(

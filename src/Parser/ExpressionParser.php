@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace O360Main\JsonTransformer\Parser;
 
 use O360Main\JsonTransformer\Parser\Ast\ComparisonNode;
+use O360Main\JsonTransformer\Parser\Ast\ConcatNode;
 use O360Main\JsonTransformer\Parser\Ast\DotContextNode;
 use O360Main\JsonTransformer\Parser\Ast\FunctionCallNode;
 use O360Main\JsonTransformer\Parser\Ast\LiteralNode;
@@ -39,6 +40,16 @@ final class ExpressionParser
     private function parseExpression(array $tokens, int &$pos): Node
     {
         $left = $this->parsePrimary($tokens, $pos);
+
+        // Check for concat operator ~
+        if ($this->peek($tokens, $pos)->type === Token::TYPE_CONCAT) {
+            $parts = [$left];
+            while ($this->peek($tokens, $pos)->type === Token::TYPE_CONCAT) {
+                $pos++; // consume ~
+                $parts[] = $this->parsePrimary($tokens, $pos);
+            }
+            $left = new ConcatNode(...$parts);
+        }
 
         // Check for comparison operator
         if ($this->peek($tokens, $pos)->type === Token::TYPE_COMPARISON) {

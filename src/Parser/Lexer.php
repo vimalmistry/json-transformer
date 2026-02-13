@@ -236,6 +236,31 @@ final class Lexer
                 continue;
             }
 
+            // Concat operator +
+            if ($expression[$pos] === "+") {
+                $tokens[] = new Token(Token::TYPE_CONCAT, "+");
+                $pos++;
+                continue;
+            }
+
+            // Variable reference $name
+            if ($expression[$pos] === "$") {
+                $pos++;
+                $start = $pos;
+                while (
+                    $pos < $length &&
+                    (ctype_alnum($expression[$pos]) ||
+                        $expression[$pos] === "_")
+                ) {
+                    $pos++;
+                }
+                $tokens[] = new Token(
+                    Token::TYPE_AT_REF,
+                    "@vars." . substr($expression, $start, $pos - $start),
+                );
+                continue;
+            }
+
             // Unknown character — skip
             $pos++;
         }
