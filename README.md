@@ -15,6 +15,16 @@ composer require vimal/json-transformer
 ```php
 use Vimal\JsonTransformer\Transformer;
 
+// Configure once globally
+Transformer::getInstance()->setPath(__DIR__ . '/templates');
+
+// Use anywhere — no need to create or pass instances
+$result = Transformer::getInstance()->apply('user.tpl', $source);
+```
+
+Or use a local instance:
+
+```php
 $transformer = new Transformer();
 
 $source = [
@@ -23,6 +33,7 @@ $source = [
             'name' => '  John Doe  ',
             'email' => '  JOHN@EXAMPLE.COM  ',
             'active' => true,
+            'age' => '30',
         ],
     ],
 ];
@@ -30,11 +41,8 @@ $source = [
 $schema = [
     'name' => 'data.user.name |> trim |> lower',
     'email' => 'data.user.email |> trim |> lower',
-    'status' => [
-        '@if' => 'data.user.active == true',
-        '@then' => "'enabled'",
-        '@else' => "'disabled'",
-    ],
+    'status' => "data.user.active == true ? 'enabled' : 'disabled'",
+    'age' => 'data.user.age |> to_integer',
 ];
 
 $result = $transformer->transform($source, $schema);
@@ -42,6 +50,7 @@ $result = $transformer->transform($source, $schema);
 //     'name' => 'john doe',
 //     'email' => 'john@example.com',
 //     'status' => 'enabled',
+//     'age' => 30,
 // ]
 ```
 
@@ -129,7 +138,9 @@ Reusable transformation pipelines. Use `.` for the incoming pipe value. Referenc
 }
 ```
 
-### Conditionals (`@if`)
+### Conditionals
+
+Block form with `@if`:
 
 ```json
 {
@@ -138,6 +149,22 @@ Reusable transformation pipelines. Use `.` for the incoming pipe value. Referenc
         "@then": "'enabled'",
         "@else": "'disabled'"
     }
+}
+```
+
+Inline ternary (single line):
+
+```json
+{
+    "status": "data.user.active == true ? 'enabled' : 'disabled'"
+}
+```
+
+Both forms work. Ternary can also be chained with pipes:
+
+```json
+{
+    "label": "data.user.active == true ? 'Active' : 'Inactive' |> upper"
 }
 ```
 
@@ -251,9 +278,15 @@ templates/
 $transformer = new Transformer();
 $transformer->setPath(__DIR__ . '/templates');
 
-$result = $transformer->apply('user', $source);    // finds templates/user.tpl.json
-$result = $transformer->apply('order', $source);   // finds templates/api/order.tpl.jsonc
-$result = $transformer->apply('report', $source);  // finds templates/api/nested/report.tpl.json
+$result = $transformer->apply('user.tpl', $source);    // finds templates/user.tpl.json
+$result = $transformer->apply('order', $source);        // finds templates/api/order.tpl.jsonc
+$result = $transformer->apply('report.tpl', $source);   // finds templates/api/nested/report.tpl.json
+```
+
+`apply()` also accepts an inline schema array directly:
+
+```php
+$result = $transformer->apply(['name' => 'data.user.name |> trim'], $source);
 ```
 
 JSONC files support single-line (`//`) and multi-line (`/* */`) comments, plus trailing commas:
@@ -265,6 +298,20 @@ JSONC files support single-line (`//`) and multi-line (`/* */`) comments, plus t
     /* ID field */
     "id": "data.user.id",
 }
+```
+
+## Global Instance
+
+Configure once and use anywhere without passing instances:
+
+```php
+// Bootstrap (once)
+Transformer::getInstance()->setPath(__DIR__ . '/templates');
+Transformer::getInstance()->addFunction('slug', fn($v) => strtolower(preg_replace('/\s+/', '-', trim($v))));
+
+// Anywhere in your app
+$user = Transformer::getInstance()->apply('user.tpl', $source);
+$order = Transformer::getInstance()->apply('order.tpl', $source);
 ```
 
 ## Built-in Functions
@@ -282,6 +329,26 @@ JSONC files support single-line (`//`) and multi-line (`/* */`) comments, plus t
 | `money(currency)` | Format as money | `data.price \|> money('USD')` |
 | `now()` | Current ISO datetime | `now()` |
 
+### Casting Functions
+
+| Function | Alias | Description | Example |
+|----------|-------|-------------|---------|
+| `to_boolean` | `to_bool` | Cast to boolean | `data.flag \|> to_boolean` |
+| `to_string` | — | Cast to string | `data.num \|> to_string` |
+| `to_integer` | `to_int` | Cast to integer | `data.age \|> to_integer` |
+| `to_float` | — | Cast to float | `data.score \|> to_float` |
+| `to_array` | — | Cast to array | `data.val \|> to_array` |
+
+`to_boolean` recognizes strings `'true'`, `'1'`, `'yes'`, `'on'` as `true`.
+
+Casting works naturally with `default`:
+
+```json
+{
+    "max_login": "data.user.max_login |> default('10') |> to_int"
+}
+```
+
 ## Full Example
 
 ```php
@@ -297,6 +364,9 @@ $source = [
             'active' => true,
             'role' => 'admin',
             'created_at' => '2024-06-15 10:30:00',
+            'age' => '30',
+            'score' => '4.8',
+            'verified' => 'yes',
         ],
         'locations' => [
             'edges' => [
@@ -317,11 +387,10 @@ $schema = [
     'user' => [
         'id' => 'data.user.id',
         'name' => 'data.user.name |> trim |> lower',
-        'status' => [
-            '@if' => 'data.user.active == true',
-            '@then' => "'enabled'",
-            '@else' => "'disabled'",
-        ],
+        'age' => 'data.user.age |> to_integer',
+        'score' => 'data.user.score |> to_float',
+        'verified' => 'data.user.verified |> to_boolean',
+        'status' => "data.user.active == true ? 'enabled' : 'disabled'",
     ],
     'locations[]' => [
         '@each' => "data.locations.edges |> filter(.node.status == 'ACTIVE')",
