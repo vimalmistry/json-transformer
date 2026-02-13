@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Schema;
+namespace O360Main\JsonTransformer\Schema;
 
-use Vimal\JsonTransformer\Context;
-use Vimal\JsonTransformer\Directive\EachDirective;
-use Vimal\JsonTransformer\Directive\IfDirective;
-use Vimal\JsonTransformer\Directive\SwitchDirective;
-use Vimal\JsonTransformer\Evaluator\ExpressionEvaluator;
+use O360Main\JsonTransformer\Context;
+use O360Main\JsonTransformer\Directive\EachDirective;
+use O360Main\JsonTransformer\Directive\IfDirective;
+use O360Main\JsonTransformer\Directive\SwitchDirective;
+use O360Main\JsonTransformer\Evaluator\ExpressionEvaluator;
 
 final class SchemaWalker
 {
@@ -16,9 +16,8 @@ final class SchemaWalker
     private SwitchDirective $switchDirective;
     private EachDirective $eachDirective;
 
-    public function __construct(
-        private readonly ExpressionEvaluator $evaluator,
-    ) {
+    public function __construct(private readonly ExpressionEvaluator $evaluator)
+    {
         $this->ifDirective = new IfDirective($this->evaluator);
         $this->switchDirective = new SwitchDirective($this->evaluator);
         $this->eachDirective = new EachDirective(
@@ -36,36 +35,45 @@ final class SchemaWalker
 
         foreach ($schema as $key => $value) {
             // Skip directive keys (handled by parent)
-            if (str_starts_with($key, '@')) {
+            if (str_starts_with($key, "@")) {
                 continue;
             }
 
             // Array iteration: key ends with []
-            if (str_ends_with($key, '[]')) {
+            if (str_ends_with($key, "[]")) {
                 $outputKey = substr($key, 0, -2);
-                if (is_array($value) && isset($value['@each'])) {
-                    $result[$outputKey] = $this->eachDirective->handle($value, $ctx);
+                if (is_array($value) && isset($value["@each"])) {
+                    $result[$outputKey] = $this->eachDirective->handle(
+                        $value,
+                        $ctx,
+                    );
                 }
                 continue;
             }
 
             // String expression
             if (is_string($value)) {
-                $result[$key] = $this->evaluator->evaluateExpression($value, $ctx);
+                $result[$key] = $this->evaluator->evaluateExpression(
+                    $value,
+                    $ctx,
+                );
                 continue;
             }
 
             // Object/array value
             if (is_array($value)) {
                 // @if directive
-                if (isset($value['@if'])) {
+                if (isset($value["@if"])) {
                     $result[$key] = $this->ifDirective->handle($value, $ctx);
                     continue;
                 }
 
                 // @switch directive
-                if (isset($value['@switch'])) {
-                    $result[$key] = $this->switchDirective->handle($value, $ctx);
+                if (isset($value["@switch"])) {
+                    $result[$key] = $this->switchDirective->handle(
+                        $value,
+                        $ctx,
+                    );
                     continue;
                 }
 

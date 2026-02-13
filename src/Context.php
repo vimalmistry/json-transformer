@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer;
+namespace O360Main\JsonTransformer;
 
-use Vimal\JsonTransformer\Evaluator\PathResolver;
+use O360Main\JsonTransformer\Evaluator\PathResolver;
 
 final class Context
 {
@@ -28,7 +28,7 @@ final class Context
 
     public function pushScope(string $name, mixed $value): void
     {
-        $this->scopeStack[] = ['name' => $name, 'value' => $value];
+        $this->scopeStack[] = ["name" => $name, "value" => $value];
     }
 
     public function popScope(): void
@@ -42,14 +42,15 @@ final class Context
      */
     public function resolvePath(string $path): mixed
     {
-        $firstDot = strpos($path, '.');
-        $firstSegment = $firstDot !== false ? substr($path, 0, $firstDot) : $path;
+        $firstDot = strpos($path, ".");
+        $firstSegment =
+            $firstDot !== false ? substr($path, 0, $firstDot) : $path;
         $restPath = $firstDot !== false ? substr($path, $firstDot + 1) : null;
 
         // Check scope stack (last pushed first)
         for ($i = count($this->scopeStack) - 1; $i >= 0; $i--) {
-            if ($this->scopeStack[$i]['name'] === $firstSegment) {
-                $scopeValue = $this->scopeStack[$i]['value'];
+            if ($this->scopeStack[$i]["name"] === $firstSegment) {
+                $scopeValue = $this->scopeStack[$i]["value"];
                 if ($restPath !== null) {
                     return $this->pathResolver->resolve($restPath, $scopeValue);
                 }

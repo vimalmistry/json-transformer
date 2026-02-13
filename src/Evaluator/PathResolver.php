@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Evaluator;
+namespace O360Main\JsonTransformer\Evaluator;
 
 final class PathResolver
 {
@@ -21,17 +21,26 @@ final class PathResolver
                 return null;
             }
 
-            if ($segment['type'] === 'key') {
-                if (is_array($current) && array_key_exists($segment['value'], $current)) {
-                    $current = $current[$segment['value']];
-                } elseif (is_object($current) && property_exists($current, $segment['value'])) {
-                    $current = $current->{$segment['value']};
+            if ($segment["type"] === "key") {
+                if (
+                    is_array($current) &&
+                    array_key_exists($segment["value"], $current)
+                ) {
+                    $current = $current[$segment["value"]];
+                } elseif (
+                    is_object($current) &&
+                    property_exists($current, $segment["value"])
+                ) {
+                    $current = $current->{$segment["value"]};
                 } else {
                     return null;
                 }
-            } elseif ($segment['type'] === 'index') {
-                if (is_array($current) && array_key_exists($segment['value'], $current)) {
-                    $current = $current[$segment['value']];
+            } elseif ($segment["type"] === "index") {
+                if (
+                    is_array($current) &&
+                    array_key_exists($segment["value"], $current)
+                ) {
+                    $current = $current[$segment["value"]];
                 } else {
                     return null;
                 }
@@ -47,15 +56,21 @@ final class PathResolver
     private function parsePath(string $path): array
     {
         $segments = [];
-        $parts = explode('.', $path);
+        $parts = explode(".", $path);
 
         foreach ($parts as $part) {
             // Check for array index: edges[0]
-            if (preg_match('/^([a-zA-Z_][a-zA-Z0-9_]*)\[(\d+)\]$/', $part, $matches)) {
-                $segments[] = ['type' => 'key', 'value' => $matches[1]];
-                $segments[] = ['type' => 'index', 'value' => (int)$matches[2]];
+            if (
+                preg_match(
+                    '/^([a-zA-Z_][a-zA-Z0-9_]*)\[(\d+)\]$/',
+                    $part,
+                    $matches,
+                )
+            ) {
+                $segments[] = ["type" => "key", "value" => $matches[1]];
+                $segments[] = ["type" => "index", "value" => (int) $matches[2]];
             } else {
-                $segments[] = ['type' => 'key', 'value' => $part];
+                $segments[] = ["type" => "key", "value" => $part];
             }
         }
 

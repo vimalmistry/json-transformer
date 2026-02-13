@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Directive;
+namespace O360Main\JsonTransformer\Directive;
 
-use Vimal\JsonTransformer\Context;
+use O360Main\JsonTransformer\Context;
 
 interface DirectiveHandler
 {

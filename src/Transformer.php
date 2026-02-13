@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer;
+namespace O360Main\JsonTransformer;
 
-use Vimal\JsonTransformer\Evaluator\ExpressionEvaluator;
-use Vimal\JsonTransformer\Schema\SchemaWalker;
+use O360Main\JsonTransformer\Evaluator\ExpressionEvaluator;
+use O360Main\JsonTransformer\Schema\SchemaWalker;
 
 final class Transformer
 {

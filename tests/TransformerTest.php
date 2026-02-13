@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Tests;
+namespace O360Main\JsonTransformer\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Vimal\JsonTransformer\Transformer;
+use O360Main\JsonTransformer\Transformer;
 
 final class TransformerTest extends TestCase
 {

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Evaluator;
+namespace O360Main\JsonTransformer\Evaluator;
 
-use Vimal\JsonTransformer\Context;
-use Vimal\JsonTransformer\Parser\Ast\ComparisonNode;
-use Vimal\JsonTransformer\Parser\Ast\DotContextNode;
-use Vimal\JsonTransformer\Parser\Ast\FunctionCallNode;
-use Vimal\JsonTransformer\Parser\Ast\LiteralNode;
-use Vimal\JsonTransformer\Parser\Ast\MacroCallNode;
-use Vimal\JsonTransformer\Parser\Ast\Node;
-use Vimal\JsonTransformer\Parser\Ast\PathNode;
-use Vimal\JsonTransformer\Parser\Ast\PipeNode;
-use Vimal\JsonTransformer\Parser\Ast\RawExpressionNode;
-use Vimal\JsonTransformer\Parser\Ast\TernaryNode;
-use Vimal\JsonTransformer\Parser\Ast\VarRefNode;
-use Vimal\JsonTransformer\Parser\ExpressionParser;
+use O360Main\JsonTransformer\Context;
+use O360Main\JsonTransformer\Parser\Ast\ComparisonNode;
+use O360Main\JsonTransformer\Parser\Ast\DotContextNode;
+use O360Main\JsonTransformer\Parser\Ast\FunctionCallNode;
+use O360Main\JsonTransformer\Parser\Ast\LiteralNode;
+use O360Main\JsonTransformer\Parser\Ast\MacroCallNode;
+use O360Main\JsonTransformer\Parser\Ast\Node;
+use O360Main\JsonTransformer\Parser\Ast\PathNode;
+use O360Main\JsonTransformer\Parser\Ast\PipeNode;
+use O360Main\JsonTransformer\Parser\Ast\RawExpressionNode;
+use O360Main\JsonTransformer\Parser\Ast\TernaryNode;
+use O360Main\JsonTransformer\Parser\Ast\VarRefNode;
+use O360Main\JsonTransformer\Parser\ExpressionParser;
 
 final class ExpressionEvaluator
 {

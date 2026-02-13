@@ -6,8 +6,8 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Vimal\\JsonTransformer\\Tests\\' => array($baseDir . '/tests'),
-    'Vimal\\JsonTransformer\\' => array($baseDir . '/src'),
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
+    'O360Main\\JsonTransformer\\Tests\\' => array($baseDir . '/tests'),
+    'O360Main\\JsonTransformer\\' => array($baseDir . '/src'),
     'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
 );

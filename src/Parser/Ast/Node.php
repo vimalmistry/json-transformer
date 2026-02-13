@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Parser\Ast;
+namespace O360Main\JsonTransformer\Parser\Ast;
 
-interface Node
-{
-}
+interface Node {}

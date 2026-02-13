@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Directive;
+namespace O360Main\JsonTransformer\Directive;
 
-use Vimal\JsonTransformer\Context;
-use Vimal\JsonTransformer\Evaluator\ExpressionEvaluator;
+use O360Main\JsonTransformer\Context;
+use O360Main\JsonTransformer\Evaluator\ExpressionEvaluator;
 
 final class EachDirective implements DirectiveHandler
 {

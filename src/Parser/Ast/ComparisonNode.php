@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Parser\Ast;
+namespace O360Main\JsonTransformer\Parser\Ast;
 
 final class ComparisonNode implements Node
 {
@@ -10,6 +10,5 @@ final class ComparisonNode implements Node
         public readonly Node $left,
         public readonly string $operator,
         public readonly Node $right,
-    ) {
-    }
+    ) {}
 }

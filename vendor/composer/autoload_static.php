@@ -12,14 +12,14 @@ class ComposerStaticInitdea3c6be908e4b0fea85d3d11904e81e
     );
 
     public static $prefixLengthsPsr4 = array (
-        'V' =>
-        array (
-            'Vimal\\JsonTransformer\\Tests\\' => 28,
-            'Vimal\\JsonTransformer\\' => 22,
-        ),
         'P' =>
         array (
             'PhpParser\\' => 10,
+        ),
+        'O' =>
+        array (
+            'O360Main\\JsonTransformer\\Tests\\' => 31,
+            'O360Main\\JsonTransformer\\' => 25,
         ),
         'D' =>
         array (
@@ -28,17 +28,17 @@ class ComposerStaticInitdea3c6be908e4b0fea85d3d11904e81e
     );
 
     public static $prefixDirsPsr4 = array (
-        'Vimal\\JsonTransformer\\Tests\\' =>
-        array (
-            0 => __DIR__ . '/../..' . '/tests',
-        ),
-        'Vimal\\JsonTransformer\\' =>
-        array (
-            0 => __DIR__ . '/../..' . '/src',
-        ),
         'PhpParser\\' =>
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
+        ),
+        'O360Main\\JsonTransformer\\Tests\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
+        'O360Main\\JsonTransformer\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
         'DeepCopy\\' =>
         array (

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Parser;
+namespace O360Main\JsonTransformer\Parser;
 
 final class Token
 {

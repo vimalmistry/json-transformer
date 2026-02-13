@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vimal\JsonTransformer\Evaluator;
+namespace O360Main\JsonTransformer\Evaluator;
 
 final class FunctionRegistry
 {

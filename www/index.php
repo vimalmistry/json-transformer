@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-use Vimal\JsonTransformer\Transformer;
+use O360Main\JsonTransformer\Transformer;
 
 // Configure once (e.g. in bootstrap/init)
 Transformer::getInstance()->setPath(__DIR__);
