@@ -121,6 +121,18 @@ final class Transformer
     }
 
     /**
+     * Evaluate a single DSL expression against source data.
+     *
+     * @param string $expression e.g. "name |> upper", "first + ' ' + last"
+     * @param array  $source     The source data
+     */
+    public function applyString(string $expression, array $source): mixed
+    {
+        $ctx = new Context($source, [], []);
+        return $this->evaluator->evaluateExpression($expression, $ctx);
+    }
+
+    /**
      * Transform JSON strings.
      */
     public function transformJson(
