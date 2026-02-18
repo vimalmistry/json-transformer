@@ -39,24 +39,33 @@ final class SchemaWalker
                 continue;
             }
 
+            // Optional field: key ends with ? — omit from output if null
+            $omitNull = false;
+            if (str_ends_with($key, "?")) {
+                $omitNull = true;
+                $key = substr($key, 0, -1);
+            }
+
             // Array iteration: key ends with []
             if (str_ends_with($key, "[]")) {
                 $outputKey = substr($key, 0, -2);
                 if (is_array($value) && isset($value["@each"])) {
-                    $result[$outputKey] = $this->eachDirective->handle(
-                        $value,
-                        $ctx,
-                    );
+                    $resolved = $this->eachDirective->handle($value, $ctx);
+                    if ($omitNull && ($resolved === null || $resolved === [])) {
+                        continue;
+                    }
+                    $result[$outputKey] = $resolved;
                 }
                 continue;
             }
 
             // String expression
             if (is_string($value)) {
-                $result[$key] = $this->evaluator->evaluateExpression(
-                    $value,
-                    $ctx,
-                );
+                $resolved = $this->evaluator->evaluateExpression($value, $ctx);
+                if ($omitNull && $resolved === null) {
+                    continue;
+                }
+                $result[$key] = $resolved;
                 continue;
             }
 
@@ -64,16 +73,21 @@ final class SchemaWalker
             if (is_array($value)) {
                 // @if directive
                 if (isset($value["@if"])) {
-                    $result[$key] = $this->ifDirective->handle($value, $ctx);
+                    $resolved = $this->ifDirective->handle($value, $ctx);
+                    if ($omitNull && $resolved === null) {
+                        continue;
+                    }
+                    $result[$key] = $resolved;
                     continue;
                 }
 
                 // @switch directive
                 if (isset($value["@switch"])) {
-                    $result[$key] = $this->switchDirective->handle(
-                        $value,
-                        $ctx,
-                    );
+                    $resolved = $this->switchDirective->handle($value, $ctx);
+                    if ($omitNull && $resolved === null) {
+                        continue;
+                    }
+                    $result[$key] = $resolved;
                     continue;
                 }
 
@@ -83,6 +97,9 @@ final class SchemaWalker
             }
 
             // Scalar pass-through (numbers, booleans, null)
+            if ($omitNull && $value === null) {
+                continue;
+            }
             $result[$key] = $value;
         }
 

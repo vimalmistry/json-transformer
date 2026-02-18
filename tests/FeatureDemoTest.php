@@ -45,7 +45,13 @@ final class FeatureDemoTest extends TestCase
 
     public function testArrayIndexAccess(): void
     {
-        $source = ["items" => [["id" => "first"], ["id" => "second"], ["id" => "third"]]];
+        $source = [
+            "items" => [
+                ["id" => "first"],
+                ["id" => "second"],
+                ["id" => "third"],
+            ],
+        ];
         $result = $this->transformer->transform($source, [
             "first" => "items[0].id",
             "second" => "items[1].id",
@@ -75,14 +81,17 @@ final class FeatureDemoTest extends TestCase
 
     public function testScalarPassThrough(): void
     {
-        $result = $this->transformer->transform([], [
-            "version" => "1.0",
-            "count" => 42,
-            "enabled" => true,
-            "disabled" => false,
-            "nothing" => null,
-            "pi" => 3.14,
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "version" => "1.0",
+                "count" => 42,
+                "enabled" => true,
+                "disabled" => false,
+                "nothing" => null,
+                "pi" => 3.14,
+            ],
+        );
 
         // "version" is a string so it's evaluated as an expression — but "1.0"
         // won't match any path, resolves to null. Use literal syntax instead.
@@ -99,10 +108,13 @@ final class FeatureDemoTest extends TestCase
 
     public function testStringLiteral(): void
     {
-        $result = $this->transformer->transform([], [
-            "greeting" => "'hello world'",
-            "empty" => "''",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "greeting" => "'hello world'",
+                "empty" => "''",
+            ],
+        );
 
         $this->assertSame("hello world", $result["greeting"]);
         $this->assertSame("", $result["empty"]);
@@ -110,11 +122,14 @@ final class FeatureDemoTest extends TestCase
 
     public function testNumericLiteral(): void
     {
-        $result = $this->transformer->transform([], [
-            "int" => "42",
-            "negative" => "-5",
-            "float" => "3.14",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "int" => "42",
+                "negative" => "-5",
+                "float" => "3.14",
+            ],
+        );
 
         $this->assertSame(42, $result["int"]);
         $this->assertSame(-5, $result["negative"]);
@@ -123,10 +138,13 @@ final class FeatureDemoTest extends TestCase
 
     public function testBooleanLiteral(): void
     {
-        $result = $this->transformer->transform([], [
-            "yes" => "true",
-            "no" => "false",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "yes" => "true",
+                "no" => "false",
+            ],
+        );
 
         $this->assertTrue($result["yes"]);
         $this->assertFalse($result["no"]);
@@ -134,9 +152,12 @@ final class FeatureDemoTest extends TestCase
 
     public function testNullLiteral(): void
     {
-        $result = $this->transformer->transform([], [
-            "val" => "null",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "val" => "null",
+            ],
+        );
 
         $this->assertNull($result["val"]);
     }
@@ -246,9 +267,12 @@ final class FeatureDemoTest extends TestCase
 
     public function testDefaultWithMissingPath(): void
     {
-        $result = $this->transformer->transform([], [
-            "val" => "missing.path |> default('fallback')",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "val" => "missing.path |> default('fallback')",
+            ],
+        );
 
         $this->assertSame("fallback", $result["val"]);
     }
@@ -318,9 +342,12 @@ final class FeatureDemoTest extends TestCase
 
     public function testNowStandalone(): void
     {
-        $result = $this->transformer->transform([], [
-            "generated_at" => "now()",
-        ]);
+        $result = $this->transformer->transform(
+            [],
+            [
+                "generated_at" => "now()",
+            ],
+        );
 
         $this->assertNotNull($result["generated_at"]);
         $this->assertNotFalse(strtotime($result["generated_at"]));
@@ -704,7 +731,8 @@ final class FeatureDemoTest extends TestCase
         $source = ["email" => "  ADMIN@EXAMPLE.COM  "];
         $result = $this->transformer->transform($source, [
             "@macros" => [
-                "safe_email" => ". |> trim |> lower |> default('unknown@email.com')",
+                "safe_email" =>
+                    ". |> trim |> lower |> default('unknown@email.com')",
             ],
             "email" => "email |> @safe_email",
         ]);
@@ -717,7 +745,8 @@ final class FeatureDemoTest extends TestCase
         $source = ["email" => null];
         $result = $this->transformer->transform($source, [
             "@macros" => [
-                "safe_email" => ". |> trim |> lower |> default('unknown@email.com')",
+                "safe_email" =>
+                    ". |> trim |> lower |> default('unknown@email.com')",
             ],
             "email" => "email |> @safe_email",
         ]);
@@ -1064,16 +1093,11 @@ final class FeatureDemoTest extends TestCase
             "departments" => [
                 [
                     "name" => "Engineering",
-                    "members" => [
-                        ["name" => "Alice"],
-                        ["name" => "Bob"],
-                    ],
+                    "members" => [["name" => "Alice"], ["name" => "Bob"]],
                 ],
                 [
                     "name" => "Marketing",
-                    "members" => [
-                        ["name" => "Charlie"],
-                    ],
+                    "members" => [["name" => "Charlie"]],
                 ],
             ],
         ];
@@ -1200,7 +1224,9 @@ final class FeatureDemoTest extends TestCase
     {
         $this->transformer->addFunction(
             "wrap",
-            fn(mixed $input, string $prefix, string $suffix) => $prefix . $input . $suffix,
+            fn(mixed $input, string $prefix, string $suffix) => $prefix .
+                $input .
+                $suffix,
         );
 
         $source = ["id" => "123"];
@@ -1215,7 +1241,9 @@ final class FeatureDemoTest extends TestCase
     {
         $this->transformer->addFunction(
             "upper",
-            fn(mixed $input) => is_string($input) ? strtoupper($input) . "!" : $input,
+            fn(mixed $input) => is_string($input)
+                ? strtoupper($input) . "!"
+                : $input,
         );
 
         $source = ["name" => "hello"];
@@ -1235,7 +1263,10 @@ final class FeatureDemoTest extends TestCase
         $sourceJson = json_encode(["user" => ["name" => "  Alice  "]]);
         $schemaJson = json_encode(["name" => "user.name |> trim"]);
 
-        $resultJson = $this->transformer->transformJson($sourceJson, $schemaJson);
+        $resultJson = $this->transformer->transformJson(
+            $sourceJson,
+            $schemaJson,
+        );
         $result = json_decode($resultJson, true);
 
         $this->assertSame("Alice", $result["name"]);
@@ -1248,7 +1279,10 @@ final class FeatureDemoTest extends TestCase
     public function testApplyString(): void
     {
         $source = ["name" => "  HELLO WORLD  "];
-        $result = $this->transformer->applyString("name |> trim |> lower", $source);
+        $result = $this->transformer->applyString(
+            "name |> trim |> lower",
+            $source,
+        );
 
         $this->assertSame("hello world", $result);
     }
@@ -1295,7 +1329,9 @@ final class FeatureDemoTest extends TestCase
             file_put_contents($dir . "/profile.tpl.jsonc", $jsonc);
 
             $source = ["user" => ["name" => "  Bob  ", "id" => "u2"]];
-            $result = $this->transformer->setPath($dir)->apply("profile", $source);
+            $result = $this->transformer
+                ->setPath($dir)
+                ->apply("profile", $source);
 
             $this->assertSame("Bob", $result["name"]);
             $this->assertSame("u2", $result["id"]);
@@ -1315,7 +1351,9 @@ final class FeatureDemoTest extends TestCase
             );
 
             $source = ["order" => ["total" => 99.99]];
-            $result = $this->transformer->setPath($dir)->apply("order", $source);
+            $result = $this->transformer
+                ->setPath($dir)
+                ->apply("order", $source);
 
             $this->assertSame(99.99, $result["total"]);
         } finally {
@@ -1467,7 +1505,8 @@ final class FeatureDemoTest extends TestCase
                 "generated_at" => "now()",
             ],
             "locations[]" => [
-                "@each" => "stores |> filter(.is_active == true) |> sort(.name)",
+                "@each" =>
+                    "stores |> filter(.is_active == true) |> sort(.name)",
                 "@do" => [
                     "id" => "_data.id",
                     "input" => [
@@ -1524,7 +1563,10 @@ final class FeatureDemoTest extends TestCase
         $this->assertSame("Perth St", $loc1["input"]["address"]["address1"]);
         $this->assertSame("", $loc1["input"]["address"]["address2"]);
         $this->assertSame("Adelaide", $loc1["input"]["address"]["city"]);
-        $this->assertSame("South Australia", $loc1["input"]["address"]["province"]);
+        $this->assertSame(
+            "South Australia",
+            $loc1["input"]["address"]["province"],
+        );
         $this->assertSame("5010", $loc1["input"]["address"]["zip"]);
         $this->assertSame("AU", $loc1["input"]["address"]["countryCode"]);
         $this->assertSame("", $loc1["input"]["address"]["phone"]);
@@ -1551,6 +1593,213 @@ final class FeatureDemoTest extends TestCase
     }
 
     // =========================================================
+    // 33. OPTIONAL FIELDS — ? SUFFIX (omit null)
+    // =========================================================
+
+    public function testOptionalFieldOmittedWhenNull(): void
+    {
+        $source = ["name" => "Alice", "email" => null];
+        $result = $this->transformer->transform($source, [
+            "name" => "name",
+            "email?" => "email",
+        ]);
+
+        $this->assertSame("Alice", $result["name"]);
+        $this->assertArrayNotHasKey("email", $result);
+    }
+
+    public function testOptionalFieldKeptWhenNotNull(): void
+    {
+        $source = ["name" => "Alice", "email" => "alice@example.com"];
+        $result = $this->transformer->transform($source, [
+            "name" => "name",
+            "email?" => "email",
+        ]);
+
+        $this->assertSame("Alice", $result["name"]);
+        $this->assertSame("alice@example.com", $result["email"]);
+    }
+
+    public function testOptionalFieldKeptWhenEmptyString(): void
+    {
+        $source = ["phone" => ""];
+        $result = $this->transformer->transform($source, [
+            "phone?" => "phone",
+        ]);
+
+        // Empty string is not null — field is kept
+        $this->assertArrayHasKey("phone", $result);
+        $this->assertSame("", $result["phone"]);
+    }
+
+    public function testOptionalFieldKeptWhenFalse(): void
+    {
+        $source = ["active" => false];
+        $result = $this->transformer->transform($source, [
+            "active?" => "active",
+        ]);
+
+        // false is not null — field is kept
+        $this->assertArrayHasKey("active", $result);
+        $this->assertFalse($result["active"]);
+    }
+
+    public function testOptionalFieldKeptWhenZero(): void
+    {
+        $source = ["count" => 0];
+        $result = $this->transformer->transform($source, [
+            "count?" => "count",
+        ]);
+
+        $this->assertArrayHasKey("count", $result);
+        $this->assertSame(0, $result["count"]);
+    }
+
+    public function testOptionalFieldWithDefault(): void
+    {
+        $source = ["val" => null];
+        $result = $this->transformer->transform($source, [
+            "val?" => "val |> default('fallback')",
+        ]);
+
+        // default() makes it non-null, so field is kept
+        $this->assertArrayHasKey("val", $result);
+        $this->assertSame("fallback", $result["val"]);
+    }
+
+    public function testOptionalFieldWithMissingPath(): void
+    {
+        $result = $this->transformer->transform(
+            [],
+            [
+                "exists" => "'hello'",
+                "missing?" => "no.such.path",
+            ],
+        );
+
+        $this->assertSame("hello", $result["exists"]);
+        $this->assertArrayNotHasKey("missing", $result);
+    }
+
+    public function testOptionalFieldInsideEachDo(): void
+    {
+        $source = [
+            "items" => [
+                ["name" => "A", "note" => "important"],
+                ["name" => "B", "note" => null],
+            ],
+        ];
+        $result = $this->transformer->transform($source, [
+            "items[]" => [
+                "@each" => "items",
+                "@do" => [
+                    "name" => "name",
+                    "note?" => "note",
+                ],
+            ],
+        ]);
+
+        $this->assertCount(2, $result["items"]);
+        $this->assertArrayHasKey("note", $result["items"][0]);
+        $this->assertSame("important", $result["items"][0]["note"]);
+        $this->assertArrayNotHasKey("note", $result["items"][1]);
+    }
+
+    public function testOptionalFieldWithIfDirective(): void
+    {
+        $source = ["role" => "viewer"];
+        $result = $this->transformer->transform($source, [
+            "role" => "role",
+            "admin_note?" => [
+                "@if" => "role == 'admin'",
+                "@then" => "'Has admin access'",
+            ],
+        ]);
+
+        $this->assertSame("viewer", $result["role"]);
+        // @if returns null when condition is false and no @else — field omitted
+        $this->assertArrayNotHasKey("admin_note", $result);
+    }
+
+    public function testOptionalArrayOmittedWhenEmpty(): void
+    {
+        $source = [
+            "items" => [
+                ["name" => "A", "status" => "inactive"],
+                ["name" => "B", "status" => "inactive"],
+            ],
+        ];
+        $result = $this->transformer->transform($source, [
+            "active[]?" => [
+                "@each" => "items |> filter(.status == 'active')",
+                "@do" => [
+                    "name" => "name",
+                ],
+            ],
+        ]);
+
+        // All filtered out — empty array — field omitted
+        $this->assertArrayNotHasKey("active", $result);
+    }
+
+    public function testOptionalArrayKeptWhenNotEmpty(): void
+    {
+        $source = [
+            "items" => [
+                ["name" => "A", "status" => "active"],
+                ["name" => "B", "status" => "inactive"],
+            ],
+        ];
+        $result = $this->transformer->transform($source, [
+            "active[]?" => [
+                "@each" => "items |> filter(.status == 'active')",
+                "@do" => [
+                    "name" => "name",
+                ],
+            ],
+        ]);
+
+        $this->assertArrayHasKey("active", $result);
+        $this->assertCount(1, $result["active"]);
+        $this->assertSame("A", $result["active"][0]["name"]);
+    }
+
+    public function testOptionalArrayOmittedWhenSourceMissing(): void
+    {
+        $result = $this->transformer->transform(
+            [],
+            [
+                "items[]?" => [
+                    "@each" => "no.such.path",
+                    "@do" => [
+                        "name" => "name",
+                    ],
+                ],
+            ],
+        );
+
+        // Source path doesn't exist — @each returns [] — field omitted
+        $this->assertArrayNotHasKey("items", $result);
+    }
+
+    public function testOptionalFieldWithSwitchDirective(): void
+    {
+        $source = ["status" => "unknown"];
+        $result = $this->transformer->transform($source, [
+            "label?" => [
+                "@switch" => "status",
+                "@cases" => [
+                    "active" => "'Active'",
+                    "inactive" => "'Inactive'",
+                ],
+            ],
+        ]);
+
+        // No match and no @default — returns null — field omitted
+        $this->assertArrayNotHasKey("label", $result);
+    }
+
+    // =========================================================
     // HELPERS
     // =========================================================
 
@@ -1564,11 +1813,16 @@ final class FeatureDemoTest extends TestCase
     private function removeTempDir(string $dir): void
     {
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            new \RecursiveDirectoryIterator(
+                $dir,
+                \FilesystemIterator::SKIP_DOTS,
+            ),
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($iterator as $file) {
-            $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+            $file->isDir()
+                ? rmdir($file->getPathname())
+                : unlink($file->getPathname());
         }
         rmdir($dir);
     }
