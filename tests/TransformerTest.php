@@ -845,4 +845,95 @@ final class TransformerTest extends TestCase
 
         $this->assertSame(42, $result["val"]);
     }
+
+    // =========================================================
+    // Bare field paths inside @each/@do (no node. prefix)
+    // =========================================================
+
+    public function testEachWithBareFieldPaths(): void
+    {
+        $source = [
+            "stores" => [
+                [
+                    "uid" => "71549911083",
+                    "name" => "  Ferryden Park  ",
+                    "is_active" => true,
+                    "address" => [
+                        "address_1" => "Perth St",
+                        "city" => "Adelaide",
+                        "country_code" => "AU",
+                    ],
+                    "_data" => [
+                        "id" => "gid://shopify/Location/71549911083",
+                    ],
+                    "sync_id" => [
+                        "value" => "71549911083",
+                    ],
+                ],
+                [
+                    "uid" => "70472728619",
+                    "name" => "  My Custom Location  ",
+                    "is_active" => true,
+                    "address" => [
+                        "address_1" => "123 Main St",
+                        "city" => "Toronto",
+                        "country_code" => "CA",
+                    ],
+                    "_data" => [
+                        "id" => "gid://shopify/Location/70472728619",
+                    ],
+                    "sync_id" => [
+                        "value" => "70472728619",
+                    ],
+                ],
+            ],
+        ];
+
+        $schema = [
+            "locations[]" => [
+                "@each" => "stores",
+                "@do" => [
+                    "id" => "_data.id",
+                    "input" => [
+                        "name" => "name |> trim",
+                        "address" => [
+                            "address1" => "address.address_1",
+                            "city" => "address.city",
+                            "countryCode" => "address.country_code",
+                        ],
+                    ],
+                    "_meta" => [
+                        "uid" => "uid",
+                        "sync_id" => "sync_id.value",
+                        "is_active" => "is_active",
+                    ],
+                ],
+            ],
+        ];
+
+        $result = $this->transformer->transform($source, $schema);
+
+        $this->assertCount(2, $result["locations"]);
+
+        // First store
+        $loc1 = $result["locations"][0];
+        $this->assertSame("gid://shopify/Location/71549911083", $loc1["id"]);
+        $this->assertSame("Ferryden Park", $loc1["input"]["name"]);
+        $this->assertSame("Perth St", $loc1["input"]["address"]["address1"]);
+        $this->assertSame("Adelaide", $loc1["input"]["address"]["city"]);
+        $this->assertSame("AU", $loc1["input"]["address"]["countryCode"]);
+        $this->assertSame("71549911083", $loc1["_meta"]["uid"]);
+        $this->assertSame("71549911083", $loc1["_meta"]["sync_id"]);
+        $this->assertTrue($loc1["_meta"]["is_active"]);
+
+        // Second store
+        $loc2 = $result["locations"][1];
+        $this->assertSame("gid://shopify/Location/70472728619", $loc2["id"]);
+        $this->assertSame("My Custom Location", $loc2["input"]["name"]);
+        $this->assertSame("123 Main St", $loc2["input"]["address"]["address1"]);
+        $this->assertSame("Toronto", $loc2["input"]["address"]["city"]);
+        $this->assertSame("CA", $loc2["input"]["address"]["countryCode"]);
+        $this->assertSame("70472728619", $loc2["_meta"]["uid"]);
+        $this->assertTrue($loc2["_meta"]["is_active"]);
+    }
 }

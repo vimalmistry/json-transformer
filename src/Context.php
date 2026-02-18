@@ -11,6 +11,9 @@ final class Context
     /** @var array<array{name: string, value: mixed}> */
     private array $scopeStack = [];
 
+    /** @var array<mixed> Stack of current iteration items for bare path resolution */
+    private array $itemStack = [];
+
     private static ?PathResolver $sharedPathResolver = null;
     private PathResolver $pathResolver;
 
@@ -47,9 +50,19 @@ final class Context
         array_pop($this->scopeStack);
     }
 
+    public function pushItem(mixed $value): void
+    {
+        $this->itemStack[] = $value;
+    }
+
+    public function popItem(): void
+    {
+        array_pop($this->itemStack);
+    }
+
     /**
      * Resolves a full path like "data.user.id" or "node.name".
-     * Checks scope stack first, then source data.
+     * Checks scope stack first, then current item stack, then source data.
      */
     public function resolvePath(string $path): mixed
     {
@@ -66,6 +79,17 @@ final class Context
                     return $this->pathResolver->resolve($restPath, $scopeValue);
                 }
                 return $scopeValue;
+            }
+        }
+
+        // Check current iteration item (bare paths inside @each/@do)
+        if ($this->itemStack) {
+            $currentItem = $this->itemStack[count($this->itemStack) - 1];
+            if (is_array($currentItem)) {
+                $resolved = $this->pathResolver->resolve($path, $currentItem);
+                if ($resolved !== null) {
+                    return $resolved;
+                }
             }
         }
 

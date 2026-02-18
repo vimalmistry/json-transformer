@@ -45,7 +45,9 @@ final class EachDirective implements DirectiveHandler
                     ? $item["node"]
                     : $item;
             $ctx->pushScope("node", $scopeValue);
+            $ctx->pushItem($scopeValue);
             $result[] = ($this->schemaWalkerCallback)($template, $ctx);
+            $ctx->popItem();
             $ctx->popScope();
         }
 
