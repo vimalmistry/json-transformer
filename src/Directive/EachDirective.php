@@ -33,18 +33,18 @@ final class EachDirective implements DirectiveHandler
             return [];
         }
 
+        $alias = $definition["@as"] ?? "this";
         $template = $definition["@do"] ?? [];
         $result = [];
 
         foreach ($items as $item) {
-            // For GraphQL edges pattern: if item has a 'node' key, bind
-            // the scope variable 'node' to item['node'] so that expressions
-            // like node.id resolve to edge.node.id
+            // For GraphQL edges pattern: if item has a 'node' key, auto-extract
+            // so that expressions like this.id resolve to edge.node.id
             $scopeValue =
                 is_array($item) && array_key_exists("node", $item)
                     ? $item["node"]
                     : $item;
-            $ctx->pushScope("node", $scopeValue);
+            $ctx->pushScope($alias, $scopeValue);
             $ctx->pushItem($scopeValue);
             $result[] = ($this->schemaWalkerCallback)($template, $ctx);
             $ctx->popItem();

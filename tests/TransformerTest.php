@@ -135,23 +135,23 @@ final class TransformerTest extends TestCase
                 "@each" =>
                     "data.locations.edges |> filter(.node.status == 'ACTIVE') |> sort(.node.name)",
                 "@do" => [
-                    "uid" => "node.id |> trim",
-                    "legacy_id" => "node.legacyResourceId",
-                    "title" => "node.name |> trim",
-                    "price" => "node.price |> @money_format",
+                    "uid" => "this.id |> trim",
+                    "legacy_id" => "this.legacyResourceId",
+                    "title" => "this.name |> trim",
+                    "price" => "this.price |> @money_format",
                     "address" => [
-                        "city" => "node.address.city",
-                        "country" => "node.address.country |> upper",
+                        "city" => "this.address.city",
+                        "country" => "this.address.country |> upper",
                     ],
                     "is_active" => [
-                        "@if" => "node.status == 'ACTIVE'",
+                        "@if" => "this.status == 'ACTIVE'",
                         "@then" => "true",
                         "@else" => "false",
                     ],
                     "tags[]" => [
-                        "@each" => "node.tags |> filter(. != null)",
+                        "@each" => "this.tags |> filter(. != null)",
                         "@do" => [
-                            "label" => "node |> lower",
+                            "label" => "this |> lower",
                         ],
                     ],
                 ],
@@ -304,7 +304,7 @@ final class TransformerTest extends TestCase
                 "@each" =>
                     "data.locations.edges |> filter(.node.status == 'ACTIVE')",
                 "@do" => [
-                    "name" => "node.name |> trim",
+                    "name" => "this.name |> trim",
                 ],
             ],
         ]);
@@ -324,7 +324,7 @@ final class TransformerTest extends TestCase
                 "@each" =>
                     "data.locations.edges |> filter(.node.status == 'ACTIVE') |> sort(.node.name)",
                 "@do" => [
-                    "name" => "node.name |> trim",
+                    "name" => "this.name |> trim",
                 ],
             ],
         ]);
@@ -346,9 +346,9 @@ final class TransformerTest extends TestCase
                     "data.locations.edges |> filter(.node.status == 'ACTIVE') |> sort(.node.name)",
                 "@do" => [
                     "tags[]" => [
-                        "@each" => "node.tags |> filter(. != null)",
+                        "@each" => "this.tags |> filter(. != null)",
                         "@do" => [
-                            "label" => "node |> lower",
+                            "label" => "this |> lower",
                         ],
                     ],
                 ],
@@ -847,7 +847,7 @@ final class TransformerTest extends TestCase
     }
 
     // =========================================================
-    // Bare field paths inside @each/@do (no node. prefix)
+    // Bare field paths inside @each/@do (no this. prefix)
     // =========================================================
 
     public function testEachWithBareFieldPaths(): void
@@ -935,5 +935,74 @@ final class TransformerTest extends TestCase
         $this->assertSame("CA", $loc2["input"]["address"]["countryCode"]);
         $this->assertSame("70472728619", $loc2["_meta"]["uid"]);
         $this->assertTrue($loc2["_meta"]["is_active"]);
+    }
+
+    // =========================================================
+    // @as directive — custom iteration variable name
+    // =========================================================
+
+    public function testEachWithAsDirective(): void
+    {
+        $source = [
+            "users" => [
+                ["name" => "  Alice  ", "role" => "admin"],
+                ["name" => "  Bob  ", "role" => "guest"],
+            ],
+        ];
+
+        $result = $this->transformer->transform($source, [
+            "users[]" => [
+                "@each" => "users",
+                "@as" => "user",
+                "@do" => [
+                    "name" => "user.name |> trim",
+                    "role" => "user.role |> upper",
+                ],
+            ],
+        ]);
+
+        $this->assertCount(2, $result["users"]);
+        $this->assertSame("Alice", $result["users"][0]["name"]);
+        $this->assertSame("ADMIN", $result["users"][0]["role"]);
+        $this->assertSame("Bob", $result["users"][1]["name"]);
+        $this->assertSame("GUEST", $result["users"][1]["role"]);
+    }
+
+    public function testNestedEachWithAsDirective(): void
+    {
+        $source = [
+            "departments" => [
+                [
+                    "name" => "Engineering",
+                    "members" => [
+                        ["name" => "Alice"],
+                        ["name" => "Bob"],
+                    ],
+                ],
+            ],
+        ];
+
+        $result = $this->transformer->transform($source, [
+            "departments[]" => [
+                "@each" => "departments",
+                "@as" => "dept",
+                "@do" => [
+                    "dept_name" => "dept.name",
+                    "people[]" => [
+                        "@each" => "dept.members",
+                        "@as" => "member",
+                        "@do" => [
+                            "person_name" => "member.name |> upper",
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertCount(1, $result["departments"]);
+        $this->assertSame("Engineering", $result["departments"][0]["dept_name"]);
+        $this->assertCount(2, $result["departments"][0]["people"]);
+        $this->assertSame("ALICE", $result["departments"][0]["people"][0]["person_name"]);
+        $this->assertSame("BOB", $result["departments"][0]["people"][1]["person_name"]);
     }
 }

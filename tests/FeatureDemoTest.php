@@ -895,7 +895,7 @@ final class FeatureDemoTest extends TestCase
     }
 
     // =========================================================
-    // 20. @each / @do WITH node. PREFIX (GraphQL edges)
+    // 20. @each / @do WITH this. PREFIX (GraphQL edges)
     // =========================================================
 
     public function testEachWithGraphQLEdges(): void
@@ -914,8 +914,8 @@ final class FeatureDemoTest extends TestCase
             "products[]" => [
                 "@each" => "data.products.edges",
                 "@do" => [
-                    "id" => "node.id",
-                    "title" => "node.title |> trim",
+                    "id" => "this.id",
+                    "title" => "this.title |> trim",
                 ],
             ],
         ]);
@@ -1152,11 +1152,11 @@ final class FeatureDemoTest extends TestCase
             "items[]" => [
                 "@each" => "data.edges",
                 "@do" => [
-                    "name" => "node.name",
+                    "name" => "this.name",
                     "tags[]" => [
-                        "@each" => "node.tags |> filter(. != null)",
+                        "@each" => "this.tags |> filter(. != null)",
                         "@do" => [
-                            "label" => "node |> lower",
+                            "label" => "this |> lower",
                         ],
                     ],
                 ],

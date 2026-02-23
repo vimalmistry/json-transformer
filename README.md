@@ -188,33 +188,50 @@ Both forms work. Ternary can also be chained with pipes:
 
 Use a key ending with `[]` and provide `@each` (the source array expression) and `@do` (the template for each item).
 
-Inside `@do`, `node` refers to the current item.
+Inside `@do`, bare paths resolve against the current iteration item. You can also use the `this.` prefix explicitly:
 
 ```json
 {
     "users[]": {
         "@each": "data.users |> filter(.active == true) |> sort(.name)",
         "@do": {
-            "id": "node.id",
-            "name": "node.name |> trim",
-            "email": "node.email |> lower"
+            "id": "id",
+            "name": "name |> trim",
+            "email": "this.email |> lower"
         }
     }
 }
 ```
 
-Nested iteration is supported. The inner `@each` rebinds `node` to the inner item:
+Use `@as` to name the iteration variable (default is `"this"`). When `@as` is set, `this.` no longer works — use the alias or bare paths:
 
 ```json
 {
     "users[]": {
         "@each": "data.users",
+        "@as": "user",
         "@do": {
-            "name": "node.name",
-            "tags[]": {
-                "@each": "node.tags |> filter(. != null)",
+            "name": "user.name |> trim",
+            "email": "email |> lower"
+        }
+    }
+}
+```
+
+Nested iteration is supported. Each `@each` can have its own `@as` alias:
+
+```json
+{
+    "departments[]": {
+        "@each": "data.departments",
+        "@as": "dept",
+        "@do": {
+            "name": "dept.name",
+            "people[]": {
+                "@each": "dept.members",
+                "@as": "member",
                 "@do": {
-                    "label": "node |> lower"
+                    "person": "member.name |> upper"
                 }
             }
         }
@@ -222,7 +239,7 @@ Nested iteration is supported. The inner `@each` rebinds `node` to the inner ite
 }
 ```
 
-For GraphQL connection patterns, items shaped as `{node: {...}}` are automatically unwrapped so `node.id` resolves to `edge.node.id`.
+For GraphQL connection patterns, items shaped as `{node: {...}}` are automatically unwrapped so `id` (or `this.id`) resolves to `edge.node.id`.
 
 ### Comparisons
 
@@ -395,9 +412,9 @@ $schema = [
     'locations[]' => [
         '@each' => "data.locations.edges |> filter(.node.status == 'ACTIVE')",
         '@do' => [
-            'id' => 'node.id',
-            'name' => 'node.name',
-            'price' => 'node.price |> @money_format',
+            'id' => 'this.id',
+            'name' => 'this.name',
+            'price' => 'this.price |> @money_format',
         ],
     ],
     'stats' => [
